@@ -1,0 +1,236 @@
+﻿@page "/automation"
+
+@using BlazorSample.Services
+@using BlazorSample.Data
+@inject NavigationManager NavigationManager
+@inject AutomationService automationService;
+
+<PageTitle>New Email Automation</PageTitle>
+
+<center><h1>Email Automation</h1></center>
+
+<div class="container">
+    <EditForm Model="@automation" OnValidSubmit="@HandlerSubmit">
+        <ObjectGraphDataAnnotationsValidator />
+
+        <div class="form-group-block">
+            <div class="form-group row">
+                <label for="Automation.From" class="col-sm-2 col-form-label">Name:</label>
+                <div class="col-sm-8">
+                    <InputText type="text" class="form-control" id="Automation.Name" @bind-Value="automation.Name"></InputText>
+                </div>
+                <div class="col-sm-2">
+                    <ValidationMessage For="@(() => automation.Name)"></ValidationMessage>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="Automation.Email.From" class="col-sm-2 col-form-label">Filter Type:</label>
+                <div class="col-sm-2">
+                    <InputSelect class="form-control" @bind-Value="automation.Email.Type">
+                        <option>Select Type</option>
+                        <option value="From">From</option>
+                        <option value="Subject">Subject</option>
+                    </InputSelect>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(automation.Email.Type) && automation.Email.Type.Equals("From"))
+            {
+                <div class="form-group row">
+                    <label for="Automation.Email.From" class="col-sm-2 col-form-label">From:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Email.From" @bind-Value="automation.Email.From"></InputText>
+                        <small id="Automation.Email.From.Help" class="form-text text-muted">Filter me emails to from.</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Email.From)"></ValidationMessage>
+                    </div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(automation.Email.Type) && automation.Email.Type.Equals("Subject"))
+            {
+                <div class="form-group row">
+                    <label for="Automation.Email.Subject" class="col-sm-2 col-form-label">Subject:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Email.Subject" @bind-Value="automation.Email.Subject"></InputText>
+                        <small id="Automation.Email.Subject.Help" class="form-text text-muted">Filter me emails to subject</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Email.Subject)"></ValidationMessage>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <br>
+
+        <div class="form-group-block">
+            <div class="form-group row">
+                <label for="Automation.Todo.Name" class="col-sm-2 col-form-label">Use OneDrive ?</label>
+                <div class="col-sm-10">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="useOneDrive" id="useOneDriveYes" checked="@automation.Email.Active" @onchange="@(() => automation.Email.Active = true)">
+                        <label class="form-check-label" for="useOneDriveYes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="useOneDrive" id="useOneDriveNo" checked="@(!automation.Email.Active)" @onchange="@(() => automation.Email.Active = false)">
+                        <label class="form-check-label" for="useOneDriveNo">No</label>
+                    </div>
+                </div>
+            </div>
+            @if (automation.Email.Active)
+            {
+                <div class="form-group row">
+                    <label for="Automation.Email.Attachment.Name" class="col-sm-2 col-form-label">Attachment Name:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Email.Attachment.Name" @bind-Value="automation.Email.Attachment"></InputText>
+                        <small id="Automation.Email.Attachment.Name.Help" class="form-text text-muted">Attachment name to filter in email</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Email.Attachment)"></ValidationMessage>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <br>
+
+        <div class="form-group-block">
+            <div class="form-group row">
+                <label for="Automation.Todo.Name" class="col-sm-2 col-form-label">Use To Do ?</label>
+                <div class="col-sm-10">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="useTodo" id="useTodoYes" checked="@automation.Todo.Active" @onchange="@(() => automation.Todo.Active = true)">
+                        <label class="form-check-label" for="useTodoYes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="useTodo" id="useTodoNo" checked="@(!automation.Todo.Active)" @onchange="@(() => automation.Todo.Active = false)">
+                        <label class="form-check-label" for="useTodoNo">No</label>
+                    </div>
+                </div>
+            </div>
+            @if (automation.Todo.Active)
+            {
+                <div class="form-group row">
+                    <label for="Automation.Todo.Name" class="col-sm-2 col-form-label">Name:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Todo.Name" @bind-Value="automation.Todo.Name"></InputText>
+                        <small id="Automation.Todo.Name.Help" class="form-text text-muted">Your <b>List Name</b> in To Do app</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Todo.Name)"></ValidationMessage>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="Automation.Todo.Title" class="col-sm-2 col-form-label">Title:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Todo.Title" @bind-Value="automation.Todo.Title"></InputText>
+                        <small id="Automation.Todo.Title.Help" class="form-text text-muted">Title of the Task</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Todo.Title)"></ValidationMessage>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="Automation.Todo.Body" class="col-sm-2 col-form-label">Body:</label>
+                    <div class="col-sm-10">
+                        <InputTextArea class="form-control" id="Automation.Todo.Body" rows="3" @bind-Value="automation.Todo.Body"></InputTextArea>
+                        <small id="Automation.Todo.Body.Help" class="form-text text-muted">Body of the Task</small>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <br>
+
+        <div class="form-group-block">
+            <div class="form-group">
+                <div class="form-group row">
+                    <label for="Automation.Todo.Name" class="col-sm-2 col-form-label">Use Calendar ?</label>
+                    <div class="col-sm-10">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="useCalendar" id="useCalendarYes" checked="@automation.Calendar.Active" @onchange="@(() => automation.Calendar.Active = true)">
+                            <label class="form-check-label" for="useCalendarYes">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="useCalendar" id="useCalendarNo" checked="@(!automation.Calendar.Active)" @onchange="@(() => automation.Calendar.Active = false)">
+                            <label class="form-check-label" for="useCalendarNo">No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (automation.Calendar.Active)
+            {
+                <div class="form-group row">
+                    <label for="Automation.Calendar.Subject" class="col-sm-2 col-form-label">Subject:</label>
+                    <div class="col-sm-8">
+                        <InputText type="text" class="form-control" id="Automation.Calendar.Subject" @bind-Value="automation.Calendar.Subject"></InputText>
+                        <small id="Automation.Calendar.Subject.Help" class="form-text text-muted">Subject of event.</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Calendar.Subject)"></ValidationMessage>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="Automation.Calendar.Subject" class="col-sm-2 col-form-label">Date:</label>
+                    <div class="col-sm-4">
+                        <InputDate Type="InputDateType.Date" class="form-control" @bind-Value="automation.Calendar.Date"></InputDate>
+                    </div>
+                    <div class="col-sm-2">
+                        <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="automation.Calendar.StartWith"></InputDate>
+                        <small id="Automation.Calendar.StartWith.Help" class="form-text text-muted">Start with.</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="automation.Calendar.EndWith"></InputDate>
+                        <small id="Automation.Calendar.EndWith.Help" class="form-text text-muted">End with.</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Calendar.Date)"></ValidationMessage>
+                        <ValidationMessage For="@(() => automation.Calendar.StartWith)"></ValidationMessage>
+                        <ValidationMessage For="@(() => automation.Calendar.EndWith)"></ValidationMessage>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="Automation.Calendar.Attendee" class="col-sm-2 col-form-label">Attendee:</label>
+                    <div class="col-sm-10">
+                        <InputText type="text" class="form-control" id="Automation.Calendar.Attendee" @bind-Value="automation.Calendar.Attendee"></InputText>
+                        <small id="Automation.Calendar.Attendee.Help" class="form-text text-muted">Attendee of event.</small>
+                    </div>
+                    <div class="col-sm-2">
+                        <ValidationMessage For="@(() => automation.Calendar.Attendee)"></ValidationMessage>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="Automation.Calendar.Body" class="col-sm-2 col-form-label">Body:</label>
+                    <div class="col-sm-10">
+                        <InputTextArea class="form-control" id="Automation.Calendar.Body" rows="3" @bind-Value="automation.Calendar.Body"></InputTextArea>
+                        <small id="Automation.Calendar.Body.Help" class="form-text text-muted">Body of event.</small>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <br>
+
+        <div class="form-group-block">
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" disabled="@(!context.Validate())">Submit</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private Automation automation = new Automation();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        automation.Calendar.Date = automation.Calendar.StartWith = automation.Calendar.EndWith = DateTime.Now;
+    }
+
+    private void HandlerSubmit()
+    {
+            automationService.Create(automation);
+            NavigationManager.NavigateTo("/automations");
+    }
+    }

@@ -1,0 +1,89 @@
+﻿@page "/automations"
+@using BlazorSample.Data
+@using BlazorSample.Services
+@inject AutomationService automationService
+
+<PageTitle>Email Automations</PageTitle>
+
+<h1>Email Automations</h1>
+
+<p>List of recipies</p>
+
+@if (automations == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Use OneDrive</th>
+                <th>Use ToDo</th>
+                <th>Use Calendar</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var automation in automations)
+                {
+                <tr>
+                    <td>@automation.Name</td>
+                    <td>@(automation.Email.Active ? "Yes" : "No")</td>
+                    <td>@(automation.Todo.Active ? "Yes" : "No")</td>
+                    <td>@(automation.Calendar.Active ? "Yes" : "No")</td>
+                    <td><button class="btn btn-primary" @onclick="@(() => Run(automation.Id))">Run</button></td>
+                </tr>
+                }
+        </tbody>
+    </table>
+
+    @if (showToast)
+        {
+        <div class="toast align-items-center text-white bg-success border-0 bottom-0 start-50 translate-middle-x fade show" role="alert" aria-live="assertive" aria-atomic="true" style="bottom: 0; position:absolute">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Automation executed with success.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" @onclick="@(() => Close())"></button>
+            </div>
+        </div>
+        }
+
+    @if (showModal)
+        {
+        <div style="position: fixed; inset: 0px; z-index: 1050; display: block; overflow: hidden; background-color: rgb(255, 255, 255); opacity: 0.8; text-align: center; font-weight: bold; transition: visibility 0s linear 500ms; visibility: visible;">
+            <div style="position: absolute; top: 100px; bottom: 0; left: 0; right: 0; margin: auto;">
+                <div style="border-color: rgb(52, 152, 219) rgb(243, 243, 243) rgb(243, 243, 243); border-style: solid; border-width: 0.3em; border-image: none 100% / 1 / 0 stretch; border-radius: 50%; width: 2em; height: 2em; display: inline-block;"></div>
+            </div>
+        </div>
+        }
+}
+
+@code {
+    private List<Automation>? automations;
+
+        private Boolean showToast = false;
+        private Boolean showModal = false;
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            automations = automationService.GetAll();
+        }
+
+        private void Close()
+        {
+            showToast = false;
+        }
+
+        private async Task Run(String Id)
+        {
+            showToast = false;
+            showModal = true;
+            await automationService.Run(Id);
+            showModal = false;
+            showToast = true;
+        }
+    }
